@@ -1,6 +1,5 @@
 """
 utils/db.py — SQLite connection helper
-Usage: from utils.db import get_db
 """
 import sqlite3
 import os
@@ -18,6 +17,8 @@ def get_db():
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
+# ALIAS: This allows ingest.py to find 'get_db_connection' 
+get_db_connection = get_db
 
 def query(sql, params=()):
     """Run a SELECT and return list of dicts."""
@@ -25,7 +26,6 @@ def query(sql, params=()):
     rows = conn.execute(sql, params).fetchall()
     conn.close()
     return [dict(r) for r in rows]
-
 
 def execute(sql, params=()):
     """Run INSERT / UPDATE / DELETE."""
