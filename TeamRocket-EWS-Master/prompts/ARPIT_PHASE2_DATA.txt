@@ -1,0 +1,61 @@
+================================================================================
+  ARPIT'S PROMPT — PASTE THIS INTO CLAUDE (Phase 2: Data Collection)
+  Time needed: ~6 hours
+  Start this AFTER Phase 1 is working on your laptop
+================================================================================
+
+I am Arpit from Team Rocket, Chandigarh University. We are building the Disease
+Outbreak Early Warning System for CODEVISTA v1.0 (Health Tech Track).
+
+MY TASK: Phase 2 — Data Collection Pipeline
+
+CONTEXT:
+- Phase 1 is already done. I have: Flask app running, SQLite database with 22
+  Punjab districts seeded, utils/db.py helper working.
+- My job is to fetch real weather data and health records, then load everything
+  into the SQLite daily_stats table.
+
+DATABASE SCHEMA I am writing into (daily_stats table):
+  district_id, date, opd_cases, dengue_cases, malaria_cases, cholera_cases,
+  rainfall_mm, temp_max_c, temp_min_c, humidity_pct, hospital_load
+
+Please give me complete, working code for these files:
+
+FILE 1 — backend/fetch_weather.py
+  - Uses Open-Meteo API (free, no API key needed): https://api.open-meteo.com/v1/forecast
+  - Fetches for each of the 22 Punjab districts using their lat/lng from the districts table
+  - Gets: daily rainfall_sum, temperature_2m_max, temperature_2m_min, relative_humidity_2m_mean
+  - For the past 30 days (historical) using &past_days=30 parameter
+  - Returns a list of dicts: {district_id, date, rainfall_mm, temp_max_c, temp_min_c, humidity_pct}
+  - Handles API errors gracefully with try/except
+
+FILE 2 — backend/ingest.py
+  - Main pipeline script
+  - Calls fetch_weather.py to get weather data for all districts
+  - Generates realistic synthetic health data (since real data.gov.in requires registration):
+    * Base OPD cases scaled by district population (larger districts = more cases)
+    * Dengue cases spike when rainfall > 80mm (monsoon logic)
+    * Malaria cases higher in rural/smaller districts
+    * Cholera cases spike with high rainfall + low hospital_load capacity
+    * hospital_load between 0.4 and 0.95 (realistic range)
+    * Add random noise so data looks real
+  - Writes everything to SQLite daily_stats table using utils/db.py
+  - Has a --demo flag: python backend/ingest.py --demo
+    * Demo mode generates 30 days of data for all 22 districts
+    * Makes Ludhiana show a clear spike in the last 7 days (for judge demo)
+    * Makes Patiala show medium risk
+    * Makes all other districts show low risk
+  - Prints progress: "Loaded 660 rows into daily_stats"
+
+FILE 3 — data/raw/districts.csv
+  - A CSV with the 22 Punjab district names, population, lat, lng
+  - Used as fallback if database query fails
+
+After giving me the code, tell me:
+1. How to run it: python backend/ingest.py --demo
+2. How to verify: the sqlite3 command to check rows were inserted
+3. What to push to GitHub when done
+
+My current Phase 1 status: Flask working at localhost:5000/api/health ✅
+My OS: [Mac/Windows/Linux]
+================================================================================

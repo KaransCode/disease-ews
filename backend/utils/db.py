@@ -6,7 +6,7 @@ import sqlite3
 import os
 
 
-DB_PATH = os.getenv("DB_PATH", "backend/database.db")
+DB_PATH = os.getenv("DB_PATH", r"C:\Projects\CodeVista Team Rocket\disease-ews\backend\database.db")
 
 
 def get_db():

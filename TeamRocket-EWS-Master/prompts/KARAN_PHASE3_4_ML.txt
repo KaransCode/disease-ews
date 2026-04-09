@@ -1,0 +1,77 @@
+================================================================================
+  KARAN'S PROMPT — PASTE THIS INTO CLAUDE (Phase 3+4: ML Model)
+  Time needed: ~8 hours
+  Start Phase 3 after Phase 1. Start Phase 4 after Arpit pushes Phase 2 data.
+  If Arpit's data isn't ready yet, use the --generate flag to make fake data.
+================================================================================
+
+I am Karan Singh from Team Rocket, Chandigarh University. We are building the
+Disease Outbreak Early Warning System for CODEVISTA v1.0 (Health Tech Track).
+
+MY TASK: Phase 3 (Feature Engineering) + Phase 4 (ML Model Training + Scoring)
+
+CONTEXT:
+- Phase 1 done: Flask, SQLite with 22 Punjab districts, utils/db.py working
+- Arpit (Phase 2) is filling the daily_stats table with weather + health data
+- My job: read daily_stats → engineer features → train ML model → score districts
+
+DATABASE TABLES I READ FROM:
+  districts: id, name, population, area_km2, lat, lng
+  daily_stats: district_id, date, opd_cases, dengue_cases, malaria_cases,
+               cholera_cases, rainfall_mm, temp_max_c, temp_min_c,
+               humidity_pct, hospital_load
+
+DATABASE TABLE I WRITE TO:
+  risk_scores: district_id, date, score (0-100), risk_level (LOW/MEDIUM/HIGH),
+               primary_disease, confidence
+
+Please give me complete, working code for these files:
+
+FILE 1 — ml_model/process.py (Phase 3)
+  - Reads all data from daily_stats + districts using utils/db.py
+  - Engineers these features per district per day:
+    * rolling_7d_avg_cases — 7-day rolling average of total cases
+    * wow_change_pct — week-over-week % change in cases
+    * cases_per_1000 — opd_cases / (population/1000)
+    * rainfall_7d_sum — 7-day cumulative rainfall
+    * temp_deviation — temp_max vs 30-day average for that district
+    * anomaly_flag — boolean: True if cases > mean + 2*std for that district
+    * outbreak_label — target: 1 if cases doubled in next 7 days, else 0
+  - Saves to data/processed/features.csv
+  - Also saves back to SQLite as a processed_features table
+  - Has --generate flag: python ml_model/process.py --generate
+    * Generates 30 days of synthetic data for all 22 districts if daily_stats is empty
+    * Makes Ludhiana show clear outbreak pattern for demo
+
+FILE 2 — ml_model/train.py (Phase 4)
+  - Reads data/processed/features.csv
+  - Features used: rolling_7d_avg_cases, wow_change_pct, cases_per_1000,
+    rainfall_7d_sum, temp_deviation, anomaly_flag, humidity_pct, hospital_load
+  - Target: outbreak_label
+  - Trains RandomForestClassifier (n_estimators=100, random_state=42)
+  - Trains XGBClassifier (n_estimators=100, learning_rate=0.1)
+  - Creates VotingClassifier ensemble (soft voting)
+  - Prints: accuracy, classification report, feature importance
+  - Saves model to ml_model/model.pkl using joblib
+  - Also saves a scaler to ml_model/scaler.pkl
+
+FILE 3 — ml_model/predict.py (Phase 4)
+  - Loads ml_model/model.pkl and ml_model/scaler.pkl
+  - Reads today's features from daily_stats for all 22 districts
+  - Runs predict_proba() → multiplies by 100 → risk score
+  - Determines risk_level: score<50=LOW, 50-74=MEDIUM, 75+=HIGH
+  - Determines primary_disease from which disease column has highest value
+  - Writes scores to risk_scores table in SQLite
+  - Prints a summary table of all 22 districts with their scores
+  - Can be run standalone: python ml_model/predict.py
+  - Returns JSON-compatible dict (Flask will call this)
+
+After giving me the code, tell me:
+1. Run order: process.py first, then train.py, then predict.py
+2. How to verify model.pkl was saved correctly
+3. What accuracy I should expect (roughly 80-90% on synthetic data)
+4. How to share model.pkl with Vishal (he needs it for the API)
+
+My current Phase 1 status: Flask working at localhost:5000/api/health ✅
+My OS: [Mac/Windows/Linux]
+================================================================================

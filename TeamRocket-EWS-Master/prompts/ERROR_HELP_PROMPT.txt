@@ -1,0 +1,83 @@
+================================================================================
+  ERROR HELP PROMPT — PASTE THIS INTO CLAUDE WHEN YOU HIT AN ERROR
+  Fill in the [brackets] before pasting
+================================================================================
+
+I am [YOUR NAME] from Team Rocket, Chandigarh University. We are building the
+Disease Outbreak Early Warning System for CODEVISTA v1.0 (Health Tech Track).
+
+MY CURRENT PHASE: [Phase number and name]
+MY OS: [Mac / Windows / Linux]
+
+I hit an error and need your help fixing it.
+
+THE FILE I WAS WORKING ON:
+[paste the full file content here]
+
+THE COMMAND I RAN:
+[paste the exact command, e.g: python backend/ingest.py --demo]
+
+THE EXACT ERROR MESSAGE:
+[paste the full error traceback here — all lines, not just the last one]
+
+WHAT I ALREADY TRIED:
+[describe what you already tried to fix it]
+
+MY PROGRESS.txt STATUS:
+[paste the relevant section from your PROGRESS.txt file]
+
+Please:
+1. Explain what is causing this error in simple terms
+2. Give me the exact fix (corrected file or command)
+3. Tell me how to verify the fix worked
+4. Tell me if this will affect any other team member's work
+
+================================================================================
+  INTEGRATION ERROR PROMPT — Use this when merging everyone's code
+================================================================================
+
+I am Karan Singh doing the integration merge for Team Rocket.
+
+The error happens when trying to run the full integrated project.
+
+WHAT WORKS individually:
+- [list what each person's code does when run alone]
+
+WHAT FAILS when integrated:
+[describe the error]
+
+ERROR MESSAGE:
+[paste full traceback]
+
+FILES INVOLVED:
+[list which files seem to be conflicting]
+
+Please help me resolve this integration error while keeping all 4 team members'
+work intact.
+
+================================================================================
+  CONTINUING FROM PREVIOUS SESSION PROMPT
+================================================================================
+
+I am [YOUR NAME] from Team Rocket, Chandigarh University. I was working on the
+Disease Outbreak Early Warning System for CODEVISTA v1.0 (Health Tech Track).
+
+I need to continue from where I left off in a previous Claude session.
+
+MY ROLE: [Arpit=Data/Karan=ML/Vishal=API/Tanya=Frontend]
+MY CURRENT PHASE: [Phase number]
+MY PROGRESS.txt SAYS:
+[paste your section from PROGRESS.txt]
+
+WHAT I COMPLETED SO FAR:
+[list files you have already created and that are working]
+
+WHAT I NEED TO DO NEXT:
+[describe the next step from PROGRESS.txt checklist]
+
+Here are the files I have so far:
+[paste content of your most important file — e.g. the one you were working on]
+
+Please continue helping me build Phase [X] from where I left off.
+
+================================================================================
