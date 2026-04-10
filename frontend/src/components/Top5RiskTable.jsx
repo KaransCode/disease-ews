@@ -2,12 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const riskStyle = {
-  CRITICAL: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-  HIGH:     { bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' },
-  MEDIUM:   { bg: '#fefce8', color: '#ca8a04', border: '#fde68a' },
-  LOW:      { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
-};
 
 const diseaseEmoji = { Dengue: '🦟', Malaria: '💊', Cholera: '💧' };
 
