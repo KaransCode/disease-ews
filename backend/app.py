@@ -5,6 +5,7 @@ Registers all blueprints and starts the APScheduler background pipeline.
 """
 
 import logging
+import sqlite3
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -55,6 +56,20 @@ def create_app() -> Flask:
     @app.errorhandler(404)
     def not_found(e):
         return jsonify({"error": "Route not found", "detail": str(e)}), 404
+    
+    @app.route('/api/districts/<int:district_id>', methods=['GET'])
+    def get_district(district_id):
+        conn = sqlite3.connect('database.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM districts WHERE id = ?', (district_id,))
+        district = cursor.fetchone()
+        conn.close()
+        
+        if not district:
+            return jsonify({'error': 'District not found'}), 404
+        
+        return jsonify(dict(district))
 
     @app.errorhandler(500)
     def server_error(e):
