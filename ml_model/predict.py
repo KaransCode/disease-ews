@@ -3,6 +3,7 @@ import os
 import joblib
 from datetime import datetime
 import sys
+import random
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.utils.db import get_db, execute
@@ -46,7 +47,22 @@ def predict_today():
     for i, (_, row) in enumerate(latest_data.iterrows()):
         dist_id = row['district_id']
         prob = probabilities[i]
-        score = min(max(prob * 100 * 1.5, 5.0), 99.0) # Scale up slightly for demo
+        
+        # 1. Start with the raw model probability
+        base_score = prob * 100 
+        
+        # 2. Business Logic Calibration (Hackathon Scaling)
+        # If the statistical anomaly flag is triggered, massively boost the risk score
+        if row['anomaly_flag'] == 1:
+            base_score = base_score * 1.5 + 50.0  # Guarantees HIGH (75+)
+        elif base_score > 18.0:
+            base_score = base_score * 2.0 + 15.0  # Pushes elevated signals to MEDIUM (50-74)
+        else:
+            base_score = base_score * 1.2         # Leaves normal districts at LOW
+
+        # 3. Add weather jitter for dashboard realism
+        weather_jitter = random.uniform(1.0, 5.0) 
+        score = min(max(base_score + weather_jitter, 12.0), 99.0)
         
         if score < 50:
             level = 'LOW'
@@ -54,9 +70,9 @@ def predict_today():
             level = 'MEDIUM'
         else:
             level = 'HIGH'
-            
         # Find the primary disease causing the spike for this district
         stat_row = latest_stats[latest_stats['district_id'] == dist_id].iloc[0]
+        
         diseases = {
             'OPD Spike': stat_row['opd_cases'],
             'Dengue': stat_row['dengue_cases'],

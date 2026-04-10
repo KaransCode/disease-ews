@@ -22,11 +22,11 @@ def init_database():
     if os.path.exists(CSV_PATH):
         df = pd.read_csv(CSV_PATH)
         # Convert the dataframe to a list of tuples
-        district_data = list(df[['id', 'name', 'latitude', 'longitude', 'population']].itertuples(index=False, name=None))
+        district_data = list(df[['id', 'name', 'lat', 'lng', 'population']].itertuples(index=False, name=None))
         
         # 4. Insert into DB
         cur.executemany(
-            "INSERT OR REPLACE INTO districts (id, name, latitude, longitude, population) VALUES (?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO districts (id, name, lat, lng, population) VALUES (?, ?, ?, ?, ?)",
             district_data
         )
         print(f"✅ Database ready – {len(district_data)} districts seeded")
