@@ -51,7 +51,7 @@ def main():
     cursor = conn.cursor()
 
     # 1. Get districts from DB
-    cursor.execute("SELECT id, name, lat, long FROM districts")
+    cursor.execute("SELECT id, name, lat, lng FROM districts")
     districts = cursor.fetchall()
 
     # 2. Fetch Weather

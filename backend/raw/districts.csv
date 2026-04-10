@@ -1,4 +1,4 @@
-id,name,latitude,longitude,population
+id,name,lat,lng,population
 1,Amritsar,31.6340,74.8723,2490656
 2,Barnala,30.3746,75.5463,595527
 3,Bathinda,30.2110,74.9455,1388525
