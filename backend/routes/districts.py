@@ -14,30 +14,53 @@ districts_bp = Blueprint("districts", __name__, url_prefix="/api")
 def get_all_districts():
     """
     GET /api/districts
-    Returns all 22 districts with today's risk score.
+    Returns all 22 districts with the most recent risk score.
     """
-    today = date.today().isoformat()
     db = get_db()
     try:
-        rows = db.execute(
-            """
-            SELECT
-                d.id,
-                d.name,
-                d.population,
-                d.lat,
-                d.lng,
-                COALESCE(r.score, 0)            AS score,
-                COALESCE(r.risk_level, 'NO DATA') AS risk_level,
-                COALESCE(r.primary_disease, '')   AS primary_disease
-            FROM districts d
-            LEFT JOIN risk_scores r
-                ON r.district_id = d.id
-               AND r.date = ?
-            ORDER BY d.name
-            """,
-            (today,),
-        ).fetchall()
+        # Get the most recent date with risk scores
+        latest_date_row = db.execute(
+            "SELECT MAX(date) as latest_date FROM risk_scores"
+        ).fetchone()
+        
+        if not latest_date_row or not latest_date_row["latest_date"]:
+            # No scores yet, return all districts with score 0
+            rows = db.execute(
+                """
+                SELECT
+                    d.id,
+                    d.name,
+                    d.population,
+                    d.lat,
+                    d.lng,
+                    0                               AS score,
+                    'NO DATA'                        AS risk_level,
+                    ''                                AS primary_disease
+                FROM districts d
+                ORDER BY d.name
+                """
+            ).fetchall()
+        else:
+            latest_date = latest_date_row["latest_date"]
+            rows = db.execute(
+                """
+                SELECT
+                    d.id,
+                    d.name,
+                    d.population,
+                    d.lat,
+                    d.lng,
+                    COALESCE(r.score, 0)            AS score,
+                    COALESCE(r.risk_level, 'NO DATA') AS risk_level,
+                    COALESCE(r.primary_disease, '')   AS primary_disease
+                FROM districts d
+                LEFT JOIN risk_scores r
+                    ON r.district_id = d.id
+                   AND r.date = ?
+                ORDER BY d.name
+                """,
+                (latest_date,),
+            ).fetchall()
 
         result = [
             {

@@ -5,6 +5,13 @@ import { getAllDistricts } from '../services/api';
 
 const diseaseEmoji = { Dengue: '🦟', Malaria: '💊', Cholera: '💧' };
 
+const riskStyle = {
+  CRITICAL: { bg: '#fee2e2', color: '#dc2626' },
+  HIGH: { bg: '#ffedd5', color: '#ea580c' },
+  MEDIUM: { bg: '#fef9c3', color: '#ca8a04' },
+  LOW: { bg: '#dcfce7', color: '#16a34a' }
+};
+
 const getRiskLevel = (score) => {
   if (score >= 75) return 'CRITICAL';
   if (score >= 50) return 'HIGH';
