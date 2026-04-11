@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { getAllDistricts } from '../services/api';
+import api from '../services/api';
 
 const Meter = ({ value, color }) => (
   <div style={{ marginTop: 4 }}>
@@ -14,35 +15,77 @@ const Meter = ({ value, color }) => (
 
 const DistrictComparison = () => {
   const [allDistricts, setAllDistricts] = useState([]);
+  const [districtStats, setDistrictStats] = useState({});
   const [selected, setSelected] = useState(['', '']);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/api/districts')
-      .then(({ data }) => setAllDistricts(data))
-      .catch(console.error);
+    getAllDistricts()
+      .then((data) => {
+        console.log('DistrictComparison - Districts loaded:', data.length);
+        setAllDistricts(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('DistrictComparison - Error loading districts:', err);
+        setLoading(false);
+      });
   }, []);
 
-  const getDistrict = (name) => allDistricts.find(d =>
-    (d.district_name || d.name) === name
-  );
+  const fetchDistrictStats = async (districtId) => {
+    if (districtStats[districtId]) return;
+    
+    try {
+      const response = await api.get(`/districts/${districtId}/stats`);
+      if (response.data.stats && response.data.stats.length > 0) {
+        const latestStats = response.data.stats[0];
+        setDistrictStats(prev => ({
+          ...prev,
+          [districtId]: latestStats
+        }));
+        console.log(`District: ${latestStats.district_name || districtId}, Stats:`, latestStats);
+      }
+    } catch (err) {
+      console.error(`Error fetching stats for district ${districtId}:`, err);
+    }
+  };
+
+  const getDistrict = (name) => allDistricts.find(d => d.name === name);
 
   const setSelection = (idx, val) => {
     const updated = [...selected];
     updated[idx] = val;
     setSelected(updated);
+    
+    if (val) {
+      const district = getDistrict(val);
+      if (district) {
+        fetchDistrictStats(district.id);
+      }
+    }
   };
 
   const d1 = getDistrict(selected[0]);
   const d2 = getDistrict(selected[1]);
 
-  const metrics = d => d ? [
-    { label: 'Risk Score',    value: d.risk_score ?? 0,        max: 100, unit: '', color: '#ef4444' },
-    { label: 'Dengue Cases',  value: d.dengue_cases ?? 0,      max: 500, unit: '', color: '#f97316' },
-    { label: 'Malaria Cases', value: d.malaria_cases ?? 0,     max: 500, unit: '', color: '#8b5cf6' },
-    { label: 'Cholera Cases', value: d.cholera_cases ?? 0,     max: 500, unit: '', color: '#06b6d4' },
-    { label: 'WoW Change',    value: d.wow_change ?? 0,        max: 100, unit: '%', color: '#eab308' },
-    { label: 'Rainfall (mm)', value: d.rainfall ?? 0,          max: 200, unit: 'mm', color: '#3b82f6' },
-  ] : [];
+  const getMetrics = (district) => {
+    if (!district) return [];
+    
+    const stats = districtStats[district.id] || {};
+    
+    console.log(`District: ${district.name}, Stats:`, stats);
+    
+    return [
+      { label: 'Risk Score',    value: Math.round((district.score ?? 0) * 100) / 100, max: 100, unit: '', color: '#ef4444' },
+      { label: 'Dengue Cases',  value: stats.dengue_cases ?? 0,    max: 500, unit: '', color: '#f97316' },
+      { label: 'Malaria Cases', value: stats.malaria_cases ?? 0,   max: 500, unit: '', color: '#8b5cf6' },
+      { label: 'Cholera Cases', value: stats.cholera_cases ?? 0,   max: 500, unit: '', color: '#06b6d4' },
+      { label: 'OPD Cases',     value: stats.opd_cases ?? 0,       max: 1000, unit: '', color: '#10b981' },
+      { label: 'Rainfall (mm)', value: stats.rainfall_mm ?? 0,     max: 200, unit: 'mm', color: '#3b82f6' },
+      { label: 'Temperature',   value: stats.temp_max_c ?? 0,      max: 50, unit: '°C', color: '#f59e0b' },
+      { label: 'Hospital Load', value: stats.hospital_load ?? 0,   max: 1, unit: '', color: '#06b6d4', isPercentage: true },
+    ];
+  };
 
   const riskColor = { CRITICAL: '#dc2626', HIGH: '#ea580c', MEDIUM: '#ca8a04', LOW: '#16a34a' };
 
@@ -62,8 +105,7 @@ const DistrictComparison = () => {
       >
         <option value="">-- Select District --</option>
         {allDistricts.map(d => {
-          const name = d.district_name || d.name;
-          return <option key={name} value={name}>{name}</option>;
+          return <option key={d.name} value={d.name}>{d.name}</option>;
         })}
       </select>
 
@@ -71,7 +113,7 @@ const DistrictComparison = () => {
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>
-              {districtData.district_name || districtData.name}
+              {districtData.name}
             </span>
             <span style={{
               fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
@@ -79,17 +121,23 @@ const DistrictComparison = () => {
               color: riskColor[districtData.risk_level] || '#64748b'
             }}>{districtData.risk_level || 'N/A'}</span>
           </div>
-          {metrics(districtData).map(({ label, value, max, unit, color }) => (
-            <div key={label} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                <span style={{ color: '#64748b' }}>{label}</span>
-                <span style={{ fontWeight: 700, color: '#0f172a' }}>
-                  {typeof value === 'number' ? value.toLocaleString() : value}{unit}
-                </span>
+          {getMetrics(districtData).map(({ label, value, max, unit, color, isPercentage }) => {
+            const displayValue = isPercentage ? (value * 100).toFixed(0) + '%' : 
+                                typeof value === 'number' ? value.toLocaleString() : value;
+            const meterValue = isPercentage ? value * 100 : (value / max) * 100;
+            
+            return (
+              <div key={label} style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                  <span style={{ color: '#64748b' }}>{label}</span>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>
+                    {displayValue}{unit}
+                  </span>
+                </div>
+                <Meter value={Math.min(meterValue, 100)} color={color} />
               </div>
-              <Meter value={(value / max) * 100} color={color} />
-            </div>
-          ))}
+            );
+          })}
         </>
       ) : (
         <div style={{
@@ -112,14 +160,25 @@ const DistrictComparison = () => {
           District Comparison
         </h3>
       </div>
-      <div style={{ display: 'flex', gap: 16 }}>
-        <DistrictCard districtData={d1} selectorIdx={0} />
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 22, fontWeight: 800, color: '#cbd5e1', flexShrink: 0
-        }}>vs</div>
-        <DistrictCard districtData={d2} selectorIdx={1} />
-      </div>
+      
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+          Loading districts...
+        </div>
+      ) : allDistricts.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+          No district data available. Run ML scoring first.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 16 }}>
+          <DistrictCard districtData={d1} selectorIdx={0} />
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, fontWeight: 800, color: '#cbd5e1', flexShrink: 0
+          }}>vs</div>
+          <DistrictCard districtData={d2} selectorIdx={1} />
+        </div>
+      )}
     </div>
   );
 };

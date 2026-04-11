@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const LUDHIANA_ID = 12;
+// Use Rupnagar (district_id=18) - currently the highest risk district
+const HIGH_RISK_DISTRICT_ID = 18;
+const HIGH_RISK_DISTRICT_NAME = 'Rupnagar';
 const SCORE_START = 30;
-const SCORE_END = 82;
+const SCORE_END = 95;
 const ANIMATION_DURATION = 3000;
 
 export default function SimulateOutbreak({ onSimulate, onReset }) {
@@ -22,7 +24,7 @@ export default function SimulateOutbreak({ onSimulate, onReset }) {
     const score = Math.round(SCORE_START + (SCORE_END - SCORE_START) * eased);
 
     setDisplayScore(score);
-    onSimulate?.({ [LUDHIANA_ID]: score });
+    onSimulate?.({ [HIGH_RISK_DISTRICT_ID]: score });
 
     if (progress < 1) {
       rafRef.current = requestAnimationFrame(animate);
@@ -61,14 +63,14 @@ export default function SimulateOutbreak({ onSimulate, onReset }) {
       {phase === 'idle' && (
         <button className="simulate-btn" onClick={handleStart}>
           <span className="simulate-icon">⚡</span>
-          Simulate Outbreak — Ludhiana
+          Simulate Outbreak — {HIGH_RISK_DISTRICT_NAME}
         </button>
       )}
 
       {/* Animation phase */}
       {phase === 'animating' && (
         <div className="simulate-live">
-          <div className="simulate-label">🔴 LIVE — Ludhiana risk escalating</div>
+          <div className="simulate-label">🔴 LIVE — {HIGH_RISK_DISTRICT_NAME} risk escalating</div>
           <div className="simulate-score-bar">
             <div
               className="simulate-score-fill"
@@ -88,7 +90,7 @@ export default function SimulateOutbreak({ onSimulate, onReset }) {
       {phase === 'done' && (
         <div className="simulate-done">
           <div className="simulate-done-score" style={{ color: scoreColor }}>
-            ● Ludhiana: <strong>{SCORE_END}</strong> — HIGH RISK
+            ● {HIGH_RISK_DISTRICT_NAME}: <strong>{SCORE_END}</strong> — CRITICAL RISK
           </div>
           <button className="simulate-reset-btn" onClick={handleReset}>
             ↺ Reset
@@ -101,7 +103,7 @@ export default function SimulateOutbreak({ onSimulate, onReset }) {
         <div className="simulate-alert-toast">
           <div className="toast-icon">📡</div>
           <div>
-            <div className="toast-title">ALERT SENT to CMO Ludhiana</div>
+            <div className="toast-title">ALERT SENT to CMO {HIGH_RISK_DISTRICT_NAME}</div>
             <div className="toast-body">Dengue surge predicted — Immediate action required</div>
           </div>
         </div>

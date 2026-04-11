@@ -95,7 +95,7 @@ export default function MapDashboard({ onDistrictSelect, selectedDistrict, simul
                 <div className="map-popup">
                   <strong>{district.name}</strong>
                   <div className="popup-score" style={{ color }}>
-                    Score: {score ?? '—'}
+                    Score: {typeof score === 'number' ? score.toFixed(2) : '—'}
                   </div>
                   <div className="popup-risk">{district.risk_level}</div>
                   <div className="popup-disease">🦟 {district.primary_disease}</div>

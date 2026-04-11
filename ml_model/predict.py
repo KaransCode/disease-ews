@@ -103,7 +103,7 @@ def predict_today():
             "primary_disease": primary_disease
         })
         
-    print("\n✅ Scores saved to SQLite risk_scores table.")
+    print("\n[SUCCESS] Scores saved to SQLite risk_scores table.")
     return results
 
 if __name__ == '__main__':

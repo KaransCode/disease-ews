@@ -1,26 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import axios from 'axios';
+import { getAggregateStats } from '../services/api';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const DiseaseBreakdownChart = () => {
   const [totals, setTotals] = useState({ dengue: 0, malaria: 0, cholera: 0 });
+  const [dataDate, setDataDate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/districts')
-      .then(({ data }) => {
-        const agg = { dengue: 0, malaria: 0, cholera: 0 };
-        data.forEach(d => {
-          agg.dengue  += d.dengue_cases  || 0;
-          agg.malaria += d.malaria_cases || 0;
-          agg.cholera += d.cholera_cases || 0;
+    getAggregateStats()
+      .then((data) => {
+        setTotals({
+          dengue: data.dengue_cases || 0,
+          malaria: data.malaria_cases || 0,
+          cholera: data.cholera_cases || 0,
         });
-        setTotals(agg);
+        setDataDate(data.date);
+        if (data.message) {
+          console.log('Aggregate stats:', data.message);
+        }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Error loading aggregate stats:', err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -63,14 +70,25 @@ const DiseaseBreakdownChart = () => {
       borderRadius: 12, padding: 20, margin: '16px 0'
     }}>
       <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
-        Disease Breakdown — Punjab Today
+        Disease Breakdown — Punjab {dataDate ? `(${new Date(dataDate).toLocaleDateString()})` : 'Today'}
       </h3>
       <p style={{ margin: '0 0 16px', fontSize: 12, color: '#64748b' }}>
-        Total reported: {total.toLocaleString()} cases across all districts
+        {loading ? 'Loading...' : 
+         error ? 'Error loading data' :
+         total === 0 ? 'No disease data available' :
+         `Total reported: ${total.toLocaleString()} cases across all districts`}
       </p>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Loading...</div>
+        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Loading disease data...</div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: 40, color: '#ef4444' }}>Error: {error}</div>
+      ) : total === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
+          <div>No disease case data available yet.</div>
+          <div style={{ fontSize: 12, marginTop: 8 }}>Historical data will appear here after ML scoring runs.</div>
+        </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <div style={{ height: 220, flex: '0 0 220px' }}>

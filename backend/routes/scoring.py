@@ -39,8 +39,14 @@ def run_scoring():
     POST /api/run-scoring
     Triggers the full ML pipeline then auto-runs alert checker.
     """
-    model_path = os.path.join("ml_model", "model.pkl")
-    predict_script = os.path.join("ml_model", "predict.py")
+    # Fix: Use absolute paths from project root (go up from backend/routes/)
+    project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+    model_path = os.path.abspath(os.path.join(project_root, "ml_model", "model.pkl"))
+    predict_script = os.path.abspath(os.path.join(project_root, "ml_model", "predict.py"))
+    
+    print(f"[DEBUG] Model path: {model_path}")
+    print(f"[DEBUG] Predict script: {predict_script}")
+    print(f"[DEBUG] Model exists: {os.path.exists(model_path)}")
 
     # Guard: model must exist before we can predict
     if not os.path.exists(model_path):

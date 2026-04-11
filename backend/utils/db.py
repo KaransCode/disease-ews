@@ -5,8 +5,15 @@ import sqlite3
 import os
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "..", "database.db"))
+# Get the project root directory (parent of backend/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "backend", "database.db"))
+
+# Ensure the database file exists
+if not os.path.exists(DB_PATH):
+    print(f"⚠️  Database not found at {DB_PATH}, initializing...")
+    from init_db import init_database
+    init_database()
 
 
 def get_db():

@@ -82,7 +82,7 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
           {/* Risk Score Badge */}
           <div className="risk-badge-row">
             <div className="risk-score-badge" style={{ background: riskColor + '18', border: `2px solid ${riskColor}` }}>
-              <span className="risk-score-num" style={{ color: riskColor }}>{score}</span>
+              <span className="risk-score-num" style={{ color: riskColor }}>{typeof score === 'number' ? score.toFixed(2) : score}</span>
               <span className="risk-score-max">/100</span>
             </div>
             <div className="risk-info">

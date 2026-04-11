@@ -700,6 +700,15 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* View Toggle Styles */
+.view-toggle-btn {
+  transition: all 0.3s ease;
+}
+
+.view-toggle-btn:hover {
+  transform: translateY(-2px);
+}
+
 /* ── Leaflet overrides ───────────────────────────────────────── */
 .leaflet-container { font-family: var(--font) !important; }
 .leaflet-popup-content-wrapper {

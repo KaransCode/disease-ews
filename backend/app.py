@@ -52,6 +52,41 @@ def create_app() -> Flask:
     def health():
         return jsonify({"status": "ok", "service": "Disease Outbreak Early Warning System"}), 200
 
+    # ── Root Route - API Documentation ────────────────────────────────────────
+    @app.route("/", methods=["GET"])
+    def index():
+        return jsonify({
+            "service": "Disease Outbreak Early Warning System API",
+            "version": "1.0.0",
+            "status": "running",
+            "message": "Backend is running successfully! Use the endpoints below.",
+            "frontend_url": "http://localhost:3000",
+            "api_endpoints": {
+                "health": "GET /api/health",
+                "districts": {
+                    "all_districts": "GET /api/districts",
+                    "district_scores": "GET /api/districts/<id>/scores",
+                    "district_stats": "GET /api/districts/<id>/stats",
+                    "aggregate_stats": "GET /api/districts/stats/aggregate",
+                    "model_metrics": "GET /api/model/metrics"
+                },
+                "scoring": {
+                    "run_scoring": "POST /api/run-scoring",
+                    "scoring_summary": "GET /api/scoring/summary"
+                },
+                "alerts": {
+                    "get_alerts": "GET /api/alerts",
+                    "simulate_alert": "GET /api/alerts/simulate"
+                }
+            },
+            "quick_links": {
+                "health_check": "http://localhost:5000/api/health",
+                "all_districts": "http://localhost:5000/api/districts",
+                "scoring_summary": "http://localhost:5000/api/scoring/summary",
+                "model_metrics": "http://localhost:5000/api/model/metrics"
+            }
+        }), 200
+
     # ── 404 / 500 JSON handlers ───────────────────────────────────────────────
     @app.errorhandler(404)
     def not_found(e):
