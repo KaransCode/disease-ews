@@ -5,10 +5,16 @@ import {
   LineElement, Title, Tooltip, Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getDistrictStats, getDistrictScores } from '../services/api';
-import { getRiskColor } from './MapDashboard';
+import { getDistrictStats } from '../services/api';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
+
+// ✅ Defined locally
+const getRiskColor = (score) => {
+  if (score >= 75) return '#D0293C';
+  if (score >= 50) return '#C87000';
+  return '#1A7A4A';
+};
 
 const riskLabel = (score) => {
   if (score >= 75) return 'HIGH';
@@ -68,7 +74,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
 
   return (
     <div className="district-panel">
-      {/* Header */}
       <div className="panel-header" style={{ borderLeftColor: riskColor }}>
         <div>
           <h2 className="panel-district-name">{district.name}</h2>
@@ -79,7 +84,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
 
       {loading ? <Spinner /> : (
         <div className="panel-body">
-          {/* Risk Score Badge */}
           <div className="risk-badge-row">
             <div className="risk-score-badge" style={{ background: riskColor + '18', border: `2px solid ${riskColor}` }}>
               <span className="risk-score-num" style={{ color: riskColor }}>{typeof score === 'number' ? score.toFixed(2) : score}</span>
@@ -97,7 +101,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
             </div>
           </div>
 
-          {/* 14-day Trend */}
           <div className="panel-section">
             <h3 className="panel-section-title">14-Day OPD Case Trend</h3>
             <div className="chart-container">
@@ -105,7 +108,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
             </div>
           </div>
 
-          {/* Weather Row */}
           {latest && (
             <div className="panel-section">
               <h3 className="panel-section-title">Latest Conditions</h3>
@@ -129,7 +131,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
             </div>
           )}
 
-          {/* Hospital Load */}
           {latest && (
             <div className="panel-section">
               <h3 className="panel-section-title">Hospital Load</h3>
@@ -150,7 +151,6 @@ export default function DistrictPanel({ district, onClose, simulatedScore }) {
             </div>
           )}
 
-          {/* CTA */}
           <a className="view-history-btn" href={`/district/${district.id}`}
             style={{ borderColor: riskColor, color: riskColor }}>
             View Full History →
