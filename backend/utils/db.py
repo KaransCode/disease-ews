@@ -5,9 +5,20 @@ import sqlite3
 import os
 
 
-# Get the project root directory (parent of backend/)
+# Get the backend directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "backend", "database.db"))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+
+env_db = os.getenv("DB_PATH")
+if env_db:
+    if os.path.isabs(env_db):
+        DB_PATH = env_db
+    else:
+        # Resolve relative to project root
+        DB_PATH = os.path.abspath(os.path.join(PROJECT_ROOT, env_db))
+else:
+    DB_PATH = os.path.join(BASE_DIR, "database.db")
+
 
 # Ensure the database file exists
 if not os.path.exists(DB_PATH):
